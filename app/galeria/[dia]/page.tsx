@@ -3,7 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 
-export const runtime = "edge";
+export function generateStaticParams() {
+  return [{ dia: "1" }, { dia: "2" }, { dia: "3" }];
+}
 
 // ── Tipos ─────────────────────────────────────────────────────────────────
 interface Photo {
@@ -210,7 +212,6 @@ export default async function GaleriaPage({ params }: PageProps) {
                           href={photo.watermarked_url}
                           download={`3CDU_dia${diaNum}_foto${idx + 1}.jpg`}
                           id={`download-btn-${photo.id}`}
-                          onClick={(e) => e.stopPropagation()}
                           className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-[rgba(232,170,26,0.15)] border border-[rgba(232,170,26,0.4)] text-[#e8aa1a] text-xs font-bold active:bg-[rgba(232,170,26,0.4)] md:hover:bg-[rgba(232,170,26,0.3)] md:hover:border-[rgba(232,170,26,0.7)] transition-all duration-200 backdrop-blur-sm"
                         >
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
