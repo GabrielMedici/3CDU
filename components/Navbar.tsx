@@ -9,6 +9,7 @@ const navLinks = [
   { href: "#palestrantes", label: "Palestrantes" },
   { href: "#programacao", label: "Programação" },
   { href: "/galeria/1",  label: "Galeria" },
+  { href: "https://www.instagram.com/direito.unicesumaroficial/", label: "Nosso Instagram", external: true },
 ];
 
 export default function Navbar() {
@@ -66,6 +67,8 @@ export default function Navbar() {
             <li key={link.href}>
               <Link
                 href={link.href}
+                target={link.external ? "_blank" : undefined}
+                rel={link.external ? "noopener noreferrer" : undefined}
                 className="relative text-sm font-medium text-[#c299ff] hover:text-white transition-colors duration-200 group"
               >
                 {link.label}
@@ -137,6 +140,8 @@ export default function Navbar() {
             <li key={link.href}>
               <Link
                 href={link.href}
+                target={link.external ? "_blank" : undefined}
+                rel={link.external ? "noopener noreferrer" : undefined}
                 onClick={() => setMenuOpen(false)}
                 className="block text-base font-medium text-[#c299ff] hover:text-white hover:pl-2 transition-all duration-200"
               >

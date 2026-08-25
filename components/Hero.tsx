@@ -3,7 +3,10 @@ import Link from "next/link";
 
 /* ──────────────────────────────────────────────────────────────────────────
    Hero Section
-   Background: 1001236245.jpg com overlay radial roxo profundo
+   Background: gradiente CSS provisório (sem foto real ainda — ver
+   public/images/README.md). Troque pela <Image src="/images/hero-bg.jpg" fill
+   className="object-cover object-center" priority quality={90} /> assim que a
+   foto oficial do evento estiver disponível.
    ────────────────────────────────────────────────────────────────────────── */
 export default function Hero() {
   return (
@@ -12,27 +15,16 @@ export default function Hero() {
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
     >
 
-      {/* ── Background Image ───────────────────────────────────────────── */}
+      {/* ── Background CSS (placeholder até termos a foto real) ──────────── */}
       <div className="absolute inset-0 z-0">
-        <Image
-          src="/images/hero-bg.jpg"
-          alt="3º Congresso de Direito Unicesumar"
-          fill
-          className="object-cover object-center"
-          priority
-          quality={90}
-        />
-        {/* Overlay radial: roxo profundo mescla com o fundo da página */}
         <div
           className="absolute inset-0"
           style={{
             background: `
-              radial-gradient(ellipse 90% 90% at 50% 45%,
-                rgba(43,0,87,0.55) 0%,
-                rgba(26,0,51,0.82) 45%,
-                rgba(13,0,25,0.97) 80%,
-                #0d0019 100%
-              )
+              radial-gradient(ellipse 70% 60% at 20% 15%, rgba(133,51,240,0.35) 0%, transparent 55%),
+              radial-gradient(ellipse 60% 50% at 85% 10%, rgba(232,170,26,0.18) 0%, transparent 55%),
+              radial-gradient(ellipse 90% 90% at 50% 45%, rgba(43,0,87,0.75) 0%, rgba(26,0,51,0.9) 45%, rgba(13,0,25,0.98) 80%, #0d0019 100%),
+              #0d0019
             `,
           }}
         />
@@ -144,7 +136,7 @@ export default function Hero() {
           style={{ animationDelay: "0.55s" }}
         >
           {[
-            { icon: "📅", label: "Data", value: "Em breve" },
+            { icon: "📅", label: "Data", value: "25 a 27 de Agosto" },
             { icon: "📍", label: "Local", value: "Maringá · PR" },
             { icon: "🏆", label: "Edição", value: "3º - 2026" },
           ].map((item) => (

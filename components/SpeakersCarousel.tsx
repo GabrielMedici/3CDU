@@ -9,67 +9,35 @@ import Image from "next/image";
 const SPEAKERS = [
   {
     id: 1,
-    name: "Dr. Carlos Mendonça",
-    title: "Ministro do STJ",
+    name: "Pedro Lenza",
+    title: "Palestra em 25 de Agosto",
     area: "Direito Constitucional",
-    photo: null,
-    initials: "CM",
+    photo: "/images/speakers/pedro-lenza.jpg",
+    initials: "PL",
   },
   {
     id: 2,
-    name: "Dra. Ana Paula Lira",
-    title: "Desembargadora TJ-PR",
-    area: "Direito Civil",
-    photo: null,
-    initials: "AL",
+    name: "Rogério Greco",
+    title: "Palestra em 26 de Agosto",
+    area: "Direito Penal",
+    photo: "/images/speakers/rogerio-greco.jpg",
+    initials: "RG",
   },
   {
     id: 3,
-    name: "Prof. Dr. Roberto Farias",
-    title: "Professor Titular USP",
-    area: "Direito Penal",
-    photo: null,
-    initials: "RF",
+    name: "Pedro Barretto",
+    title: "Palestra em 26 de Agosto",
+    area: "Direito",
+    photo: "/images/speakers/pedro-barretto.jpg",
+    initials: "PB",
   },
   {
     id: 4,
-    name: "Dra. Fernanda Costa",
-    title: "Procuradora da República",
-    area: "Direito Administrativo",
-    photo: null,
-    initials: "FC",
-  },
-  {
-    id: 5,
-    name: "Dr. Marcelo Zanetti",
-    title: "Advogado Criminalista",
-    area: "Direito Processual",
-    photo: null,
-    initials: "MZ",
-  },
-  {
-    id: 6,
-    name: "Dra. Juliana Braga",
-    title: "Juíza Federal",
-    area: "Direito Tributário",
-    photo: null,
-    initials: "JB",
-  },
-  {
-    id: 7,
-    name: "Prof. Dr. Henrique Luz",
-    title: "Doutor em Direito — UFPR",
-    area: "Direito Digital",
-    photo: null,
-    initials: "HL",
-  },
-  {
-    id: 8,
-    name: "Dra. Patrícia Moura",
-    title: "Promotora de Justiça",
-    area: "Direito da Família",
-    photo: null,
-    initials: "PM",
+    name: "Bruno Zampier",
+    title: "Palestra em 27 de Agosto",
+    area: "Direito",
+    photo: "/images/speakers/bruno-zampier.jpg",
+    initials: "BZ",
   },
 ];
 
@@ -112,7 +80,10 @@ function SpeakerCard({
       }}
     >
       {/* Foto / Avatar */}
-      <div className="relative w-full aspect-square overflow-hidden">
+      {/* Fotos reais vêm de flyers com nome/data já gravados na parte inferior da
+          imagem; usamos um recorte mais baixo (em vez de aspect-square) pra cortar
+          essa faixa de texto e evitar duplicar com o nome exibido abaixo do card. */}
+      <div className={`relative w-full overflow-hidden ${photo ? "aspect-[5/3]" : "aspect-square"}`}>
         {photo ? (
           <Image
             src={photo}

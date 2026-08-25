@@ -2,6 +2,8 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import SpeakersCarousel from "@/components/SpeakersCarousel";
 import ScheduleBoard from "@/components/ScheduleBoard";
+import LocationSection from "@/components/LocationSection";
+import FaqSection from "@/components/FaqSection";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -150,6 +152,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* ── Seção: Localização ───────────────────────────────────────── */}
+      <LocationSection />
+
+      {/* ── Seção: FAQ ───────────────────────────────────────────────── */}
+      <FaqSection />
 
       {/* ── Footer ───────────────────────────────────────────────────── */}
       <footer className="border-t border-[rgba(232,170,26,0.1)] py-10 px-6">
