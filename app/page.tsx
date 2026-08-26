@@ -67,7 +67,7 @@ export default function HomePage() {
             ].map((stat) => (
               <div
                 key={stat.tag ?? stat.label}
-                className="glass border-gold-glow rounded-2xl py-8 px-4 flex flex-col items-center gap-2 text-center"
+                className="glass border-gold-glow rounded-2xl py-8 px-4 flex flex-col items-center justify-center gap-2 text-center"
               >
                 {stat.tag ? (
                   <>
