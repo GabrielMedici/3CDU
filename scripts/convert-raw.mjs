@@ -109,7 +109,7 @@ async function applyWatermark(imageBuf, watermarkBase) {
       {
         input: wmResized,
         left: Math.max(0, meta.width - wmMeta.width - margin),
-        top: Math.max(0, meta.height - wmMeta.height - margin),
+        top: margin, // canto superior direito
       },
     ])
     .jpeg({ quality: 82 })
