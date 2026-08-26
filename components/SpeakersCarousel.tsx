@@ -41,9 +41,6 @@ const SPEAKERS = [
   },
 ];
 
-// Duplica para criar o efeito de loop infinito sem salto
-const TRACK = [...SPEAKERS, ...SPEAKERS];
-
 /* ── Card Individual ────────────────────────────────────────────────────── */
 function SpeakerCard({
   name,
@@ -54,7 +51,7 @@ function SpeakerCard({
 }: (typeof SPEAKERS)[0]) {
   return (
     <div
-      className="flex-shrink-0 w-56 rounded-2xl overflow-hidden group cursor-default select-none"
+      className="w-full rounded-2xl overflow-hidden group cursor-default select-none"
       style={{
         background:
           "linear-gradient(145deg, rgba(43,0,87,0.7) 0%, rgba(26,0,51,0.85) 100%)",
@@ -83,7 +80,7 @@ function SpeakerCard({
       {/* Fotos reais vêm de flyers com nome/data já gravados na parte inferior da
           imagem; usamos um recorte mais baixo (em vez de aspect-square) pra cortar
           essa faixa de texto e evitar duplicar com o nome exibido abaixo do card. */}
-      <div className={`relative w-full overflow-hidden ${photo ? "aspect-[5/3]" : "aspect-square"}`}>
+      <div className={`relative w-full overflow-hidden ${photo ? "aspect-[4/3]" : "aspect-square"}`}>
         {photo ? (
           <Image
             src={photo}
@@ -151,15 +148,15 @@ function SpeakerCard({
       </div>
 
       {/* Informações */}
-      <div className="px-4 py-4">
-        <h3 className="text-sm font-bold text-white leading-snug mb-1 group-hover:text-[#f5c842] transition-colors duration-300">
+      <div className="px-5 py-5">
+        <h3 className="text-lg font-bold text-white leading-snug mb-1.5 group-hover:text-[#f5c842] transition-colors duration-300">
           {name}
         </h3>
-        <p className="text-[11px] text-[#a399b8] leading-relaxed">{title}</p>
+        <p className="text-sm text-[#a399b8] leading-relaxed">{title}</p>
 
         {/* Linha dourada decorativa */}
         <div
-          className="mt-3 h-px w-8 rounded-full transition-all duration-300 group-hover:w-full"
+          className="mt-4 h-px w-10 rounded-full transition-all duration-300 group-hover:w-full"
           style={{
             background:
               "linear-gradient(90deg, #e8aa1a 0%, rgba(232,170,26,0.2) 100%)",
@@ -200,53 +197,14 @@ export default function SpeakersCarousel() {
         </div>
       </div>
 
-      {/* ── Trilha de scroll infinito ──────────────────────────────────── */}
-      {/*
-        A `div.track` anima com translateX de 0 a -50% (metade = 1 cópia
-        dos cards), criando loop perfeito. `animation-play-state: paused`
-        ao hover do wrapper para.
-      */}
-      <div
-        className="relative"
-        style={
-          {
-            /* Máscara de gradiente nas bordas laterais */
-            maskImage:
-              "linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%)",
-          } as React.CSSProperties
-        }
-        onMouseEnter={(e) => {
-          const track = e.currentTarget.querySelector<HTMLDivElement>(".marquee-track");
-          if (track) track.style.animationPlayState = "paused";
-        }}
-        onMouseLeave={(e) => {
-          const track = e.currentTarget.querySelector<HTMLDivElement>(".marquee-track");
-          if (track) track.style.animationPlayState = "running";
-        }}
-      >
-        <div
-          className="marquee-track flex gap-5"
-          style={{
-            width: "max-content",
-            animation: "marqueeScroll 40s linear infinite",
-            willChange: "transform",
-          }}
-        >
-          {TRACK.map((speaker, idx) => (
-            <SpeakerCard key={`${speaker.id}-${idx}`} {...speaker} />
+      {/* ── Grid estático ──────────────────────────────────────────────── */}
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {SPEAKERS.map((speaker) => (
+            <SpeakerCard key={speaker.id} {...speaker} />
           ))}
         </div>
       </div>
-
-      {/* Keyframe injetado via style tag */}
-      <style>{`
-        @keyframes marqueeScroll {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-      `}</style>
     </section>
   );
 }

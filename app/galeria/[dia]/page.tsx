@@ -1,8 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import Image from "next/image";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
-import DownloadButton from "@/components/DownloadButton";
+import PhotoGallery from "@/components/PhotoGallery";
 
 export function generateStaticParams() {
   return [{ dia: "1" }, { dia: "2" }, { dia: "3" }];
@@ -181,59 +180,7 @@ export default async function GaleriaPage({ params }: PageProps) {
               {photos.length === 1 ? "foto disponível" : "fotos disponíveis"}
             </p>
 
-            {/* Grid Masonry-like */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {photos.map((photo, idx) => (
-                <div
-                  key={photo.id}
-                  id={`photo-card-${photo.id}`}
-                  className="photo-card group"
-                  style={{ animationDelay: `${idx * 0.05}s` }}
-                >
-                  {/* Thumbnail */}
-                  <div className="relative aspect-square overflow-hidden">
-                    {photo.thumbnail_url ? (
-                      <Image
-                        src={photo.thumbnail_url}
-                        alt={`Foto ${idx + 1} — Dia ${diaNum} do 3CDU`}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                        loading={idx < 10 ? "eager" : "lazy"}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-[rgba(43,0,87,0.5)]">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="rgba(163,102,255,0.4)" className="w-10 h-10">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Z" />
-                        </svg>
-                      </div>
-                    )}
-
-                    {/* Overlay com botão de download (Visível no mobile, Hover no Desktop) */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.9)] via-[rgba(0,0,0,0.4)] to-transparent opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center p-3 sm:p-4">
-                      {photo.watermarked_url ? (
-                        <DownloadButton
-                          url={photo.watermarked_url}
-                          filename={`3CDU_dia${diaNum}_foto${idx + 1}.jpg`}
-                          id={`download-btn-${photo.id}`}
-                          className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-[rgba(232,170,26,0.15)] border border-[rgba(232,170,26,0.4)] text-[#e8aa1a] text-xs font-bold active:bg-[rgba(232,170,26,0.4)] md:hover:bg-[rgba(232,170,26,0.3)] md:hover:border-[rgba(232,170,26,0.7)] transition-all duration-200 backdrop-blur-sm disabled:opacity-60"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                            <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
-                            <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
-                          </svg>
-                          Baixar
-                        </DownloadButton>
-                      ) : (
-                        <p className="text-xs text-[#a399b8] text-center w-full">
-                          Processando...
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <PhotoGallery photos={photos} diaNum={diaNum} />
           </>
         )}
       </section>

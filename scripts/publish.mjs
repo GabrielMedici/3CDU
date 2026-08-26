@@ -13,6 +13,10 @@
 //
 // É seguro rodar de novo na mesma pasta: fotos já publicadas (mesmo nome de
 // arquivo, mesmo dia) são puladas, então dá pra rodar a cada leva nova de fotos.
+//
+// Use --force pra reenviar TUDO de novo mesmo o que já foi publicado (ex:
+// depois de trocar a marca d'água ou reprocessar o lote inteiro) — sobrescreve
+// os arquivos no Storage sem duplicar linha na tabela.
 
 import { createClient } from "@supabase/supabase-js";
 import { readdir, readFile } from "fs/promises";
@@ -33,7 +37,8 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 const args = process.argv.slice(2);
 const diaIdx = args.indexOf("--dia");
 const dia = diaIdx !== -1 ? Number(args[diaIdx + 1]) : null;
-const inputDir = args.filter((a, i) => a !== "--dia" && args[i - 1] !== "--dia")[0];
+const force = args.includes("--force");
+const inputDir = args.filter((a, i) => a !== "--dia" && args[i - 1] !== "--dia" && a !== "--force")[0];
 
 if (!dia || ![1, 2, 3].includes(dia) || !inputDir) {
   console.error('Uso: node --env-file=.env scripts/publish.mjs --dia <1|2|3> "<pasta convertidas>"');
@@ -85,6 +90,7 @@ async function main() {
   console.log(`Publicando ${files.length} foto(s) do Dia ${dia}...`);
 
   let published = 0;
+  let overwritten = 0;
   let skipped = 0;
   let failed = 0;
 
@@ -95,14 +101,23 @@ async function main() {
 
     try {
       const thumbnailUrl = await uploadOne(thumbLocal, `dia_${dia}/thumb/${baseName}.jpg`);
+      const exists = await alreadyPublished(thumbnailUrl);
 
-      if (await alreadyPublished(thumbnailUrl)) {
+      if (exists && !force) {
         skipped++;
         process.stdout.write(`\r[${i + 1}/${files.length}] ${file} já publicada, pulando          `);
         continue;
       }
 
       const watermarkedUrl = await uploadOne(displayLocal, `dia_${dia}/display/${baseName}.jpg`);
+
+      if (exists) {
+        // --force: arquivo já sobrescrito no Storage acima, linha do banco
+        // continua igual (mesma URL, não precisa mexer na tabela).
+        overwritten++;
+        process.stdout.write(`\r[${i + 1}/${files.length}] ${file} sobrescrita          `);
+        continue;
+      }
 
       const { error } = await supabase.from("photos").insert({
         dia_evento: dia,
@@ -120,7 +135,7 @@ async function main() {
   }
 
   console.log("\n\n=== Resumo ===");
-  console.log(`Publicadas: ${published}  |  Já existiam: ${skipped}  |  Falharam: ${failed}`);
+  console.log(`Publicadas (novas): ${published}  |  Sobrescritas: ${overwritten}  |  Puladas: ${skipped}  |  Falharam: ${failed}`);
 }
 
 main().catch((err) => {
