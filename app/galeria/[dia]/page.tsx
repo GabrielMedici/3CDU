@@ -37,7 +37,10 @@ async function getPhotos(dia: number): Promise<Photo[]> {
       .select("id, dia_evento, thumbnail_url, watermarked_url, created_at")
       .eq("dia_evento", dia)
       .order("created_at", { ascending: false });
-      
+
+    if (result.error) {
+      console.error(`[getPhotos] Supabase retornou erro pro dia ${dia}:`, result.error);
+    }
     data = result.data;
   } catch (error) {
     // Falha silenciosa no modo dev (ex: sem internet ou sem chaves .env)
