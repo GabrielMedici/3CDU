@@ -56,9 +56,9 @@ const outputDir = process.argv[3] || path.join(inputDir, "convertidas");
 
 const LAPLACIAN_KERNEL = { width: 3, height: 3, kernel: [0, 1, 0, 1, -4, 1, 0, 1, 0] };
 
-async function analyzeQuality(previewPath) {
+async function analyzeQuality(previewPath, rotateDeg) {
   const smallBuf = await sharp(previewPath)
-    .rotate()
+    .rotate(rotateDeg || undefined)
     .resize(400, 400, { fit: "inside" })
     .greyscale()
     .raw()
@@ -79,7 +79,7 @@ async function analyzeQuality(previewPath) {
   const sharpness = lapStats.channels[0].stdev;
 
   // Hash perceptual simples (aHash 8x8) pra detectar rajadas quase idênticas
-  const hashBuf = await sharp(previewPath).rotate().resize(8, 8, { fit: "fill" }).greyscale().raw().toBuffer();
+  const hashBuf = await sharp(previewPath).rotate(rotateDeg || undefined).resize(8, 8, { fit: "fill" }).greyscale().raw().toBuffer();
   let hashSum = 0;
   for (const v of hashBuf) hashSum += v;
   const hashMean = hashSum / hashBuf.length;
@@ -120,6 +120,20 @@ function hammingDistance(a, b) {
   let dist = 0;
   for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) dist++;
   return dist;
+}
+
+// A prévia JPEG extraída de dentro do RAW nem sempre carrega sua própria
+// etiqueta de orientação EXIF — só o arquivo RAW original carrega. Por isso
+// lemos a orientação direto do RAW e giramos a prévia explicitamente, em vez
+// de confiar só no .rotate() automático do Sharp (que olha pra prévia).
+function orientationToDegrees(tags) {
+  const o = tags.Orientation;
+  if (o == null) return 0;
+  const s = String(o);
+  if (s.includes("180")) return 180;
+  if (s.includes("270") || s === "8" || /90 CCW|Rotate 90 CCW/i.test(s)) return 270;
+  if (s.includes("90") || s === "6") return 90;
+  return 0;
 }
 
 function captureEpochSeconds(tags) {
@@ -173,9 +187,12 @@ async function main() {
     try {
       await exiftool.extractPreview(srcPath, tempPreview);
       const tags = await exiftool.read(srcPath);
+      // A prévia pode não ter orientação própria — usamos a do RAW original
+      // como fonte da verdade e giramos explicitamente com base nela.
+      const rotateDeg = orientationToDegrees(tags);
 
       const resizedBuf = await sharp(tempPreview)
-        .rotate()
+        .rotate(rotateDeg || undefined)
         .resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true })
         .jpeg({ quality: 82 })
         .toBuffer();
@@ -183,13 +200,13 @@ async function main() {
       await sharp(displayBuf).toFile(displayOut);
 
       const thumbBuf = await sharp(tempPreview)
-        .rotate()
+        .rotate(rotateDeg || undefined)
         .resize({ width: 600, height: 600, fit: "inside", withoutEnlargement: true })
         .jpeg({ quality: 75 })
         .toBuffer();
       await sharp(thumbBuf).toFile(thumbOut);
 
-      const { mean, sharpness, hash } = await analyzeQuality(tempPreview);
+      const { mean, sharpness, hash } = await analyzeQuality(tempPreview, rotateDeg);
 
       items.push({
         baseName,
