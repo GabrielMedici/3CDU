@@ -177,7 +177,9 @@ export default function Hero() {
 
           {/* Botão Secundário: Editais */}
           <Link
-            href="#"
+            href="https://www.even3.com.br/3cdu/"
+            target="_blank"
+            rel="noopener noreferrer"
             id="hero-cta-editais"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full text-base font-semibold text-white border border-[rgba(255,255,255,0.2)] hover:bg-[rgba(255,255,255,0.08)] hover:border-[rgba(255,255,255,0.4)] transition-all duration-300 backdrop-blur-sm"
           >

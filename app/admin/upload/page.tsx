@@ -231,7 +231,10 @@ export default function AdminUploadPage() {
           <code className="text-[#e8aa1a] bg-[rgba(232,170,26,0.1)] px-1.5 py-0.5 rounded text-xs">
             raw-photos
           </code>{" "}
-          do Supabase e processados automaticamente pela Edge Function.
+          do Supabase como backup. Isso <strong>não</strong> publica na galeria
+          sozinho — quem publica é o comando{" "}
+          <code className="text-[#e8aa1a] text-xs">npm run publish</code>, rodado
+          no computador de quem estiver processando as fotos do evento.
         </p>
 
         {/* ── Seletor de Dia ─────────────────────────────────────────── */}
@@ -452,7 +455,9 @@ export default function AdminUploadPage() {
                 <div>
                   <p className="text-green-400 font-semibold text-sm">Upload concluído!</p>
                   <p className="text-[#a399b8] text-xs mt-0.5">
-                    A Edge Function irá processar a marca d&apos;água automaticamente.
+                    Guardado como backup. Pra aparecer na galeria, processe e
+                    publique com <code className="text-[#e8aa1a]">npm run convert-raw</code> +{" "}
+                    <code className="text-[#e8aa1a]">npm run publish</code>.
                   </p>
                 </div>
               </div>
@@ -466,20 +471,25 @@ export default function AdminUploadPage() {
           <ol className="space-y-2 text-sm text-[#a399b8]">
             <li className="flex gap-2">
               <span className="text-[#e8aa1a] font-bold">1.</span>
-              Selecione o dia do evento e arraste as fotos para o campo acima.
+              Este painel só guarda um backup das fotos originais no bucket{" "}
+              <code className="text-[#e8aa1a] text-xs">raw-photos</code> — ele não
+              publica nada na galeria sozinho.
             </li>
             <li className="flex gap-2">
               <span className="text-[#e8aa1a] font-bold">2.</span>
-              As fotos são enviadas diretamente ao bucket{" "}
-              <code className="text-[#e8aa1a] text-xs">raw-photos</code> do Supabase.
+              Pra publicar de verdade: no computador com as fotos, rode{" "}
+              <code className="text-[#e8aa1a] text-xs">npm run convert-raw</code>{" "}
+              (converte RAW, aplica marca d&apos;água e separa as duvidosas).
             </li>
             <li className="flex gap-2">
               <span className="text-[#e8aa1a] font-bold">3.</span>
-              A Edge Function detecta automaticamente e adiciona a marca d&apos;água.
+              Depois rode <code className="text-[#e8aa1a] text-xs">npm run publish</code>{" "}
+              — isso sobe as fotos processadas pro Supabase.
             </li>
             <li className="flex gap-2">
               <span className="text-[#e8aa1a] font-bold">4.</span>
-              As versões processadas são publicadas na galeria em instantes.
+              As fotos só aparecem no site publicado depois do próximo build +
+              deploy do projeto.
             </li>
           </ol>
         </div>

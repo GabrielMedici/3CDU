@@ -30,6 +30,13 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+.claude/
+
+# Material de referência (não faz parte do site) — identidade visual em bruto,
+# prints de programação, fotos originais recebidas por WhatsApp etc.
+/Dados_a_Preencher/
+/Id-Visual/
+/Imagens_para_Upar/
 
 # TypeScript
 *.tsbuildinfo

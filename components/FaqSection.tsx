@@ -17,7 +17,7 @@ const FAQ_DATA = [
   },
   {
     q: "As palestras serão transmitidas online?",
-    a: "Não. Para garantir a melhor experiência de networking e imersão, o 3CDU será um evento 100% presencial, realizado no campus sede da UniCesumar em Maringá.",
+    a: "As palestras principais são presenciais, no campus sede da UniCesumar em Maringá, pra garantir a melhor experiência de networking e imersão. Alguns minicursos específicos têm modalidade 100% online — confira o selo \"Online\" na programação de cada dia.",
   },
   {
     q: "Até quando posso garantir meu ingresso?",

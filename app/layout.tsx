@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://3cdu.pages.dev"),
   title: "3º Congresso de Direito Unicesumar — 3CDU",
   description:
     "O maior evento jurídico do Paraná. Palestrantes de excelência, debates transformadores e networking de alto nível. Garanta seu ingresso para o 3CDU.",
@@ -11,6 +12,7 @@ export const metadata: Metadata = {
     description: "O maior evento jurídico do Paraná.",
     locale: "pt_BR",
     type: "website",
+    images: ["/images/logo-3cdu.png"],
   },
 };
 
