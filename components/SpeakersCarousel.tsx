@@ -132,19 +132,22 @@ function SpeakerCard({
               "linear-gradient(to top, rgba(26,0,51,0.95) 0%, transparent 100%)",
           }}
         />
-        {/* Badge de área */}
-        <div className="absolute top-3 left-3">
-          <span
-            className="text-[9px] font-bold tracking-[0.15em] uppercase px-2 py-1 rounded-full"
-            style={{
-              background: "rgba(232,170,26,0.15)",
-              border: "1px solid rgba(232,170,26,0.35)",
-              color: "#e8aa1a",
-            }}
-          >
-            {area}
-          </span>
-        </div>
+        {/* Badge de área — fotos reais já vêm com o cabeçalho "3°CDU" gravado no
+            topo, então o selo aqui em cima entraria em conflito visual com ele */}
+        {!photo && (
+          <div className="absolute top-3 left-3">
+            <span
+              className="text-[9px] font-bold tracking-[0.15em] uppercase px-2 py-1 rounded-full"
+              style={{
+                background: "rgba(232,170,26,0.15)",
+                border: "1px solid rgba(232,170,26,0.35)",
+                color: "#e8aa1a",
+              }}
+            >
+              {area}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Informações */}
