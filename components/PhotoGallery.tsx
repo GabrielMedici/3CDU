@@ -15,7 +15,7 @@ interface Photo {
 // Quantas miniaturas mostrar por vez. Com >1000 fotos por dia e Supabase no
 // plano gratuito (10GB de banda/mês), renderizar tudo de uma vez estoura a
 // cota rápido — só carrega mais quando o usuário pedir.
-const PAGE_SIZE = 40;
+const PAGE_SIZE = 24;
 
 /* ── Grid de fotos + visualizador em tela cheia ───────────────────────────
    Clicar numa foto abre ela em tamanho grande (watermarked_url) antes do

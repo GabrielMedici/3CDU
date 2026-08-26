@@ -4,9 +4,13 @@
 //
 // Extrai a prévia JPEG em resolução total já gravada dentro do arquivo RAW pela
 // câmera (rápido, sem demosaicing) e gera duas versões de cada foto:
-//   - display (2400px, qualidade 82) — a foto em si, com marca d'água, usada
+//   - display (1920px, qualidade 74) — a foto em si, com marca d'água, usada
 //             pra download (usa public/images/watermark-logo.png)
-//   - thumb   (600px,  qualidade 75) — miniatura pro grid da galeria, sem marca
+//   - thumb   (480px,  qualidade 65) — miniatura pro grid da galeria, sem marca
+//
+// Tamanhos reduzidos a partir de 26/08/2026 pra economizar banda do proxy de
+// cache do Worker (worker/index.js) — o Dia 1 já publicado usa os valores
+// antigos (2400px/82 e 600px/75) e não precisa ser reprocessado.
 //
 // A triagem é só um AUXÍLIO — nada é apagado. Fotos com sinal de problema
 // (desfocada, muito escura/estourada, possível duplicata de rajada) continuam
@@ -112,7 +116,7 @@ async function applyWatermark(imageBuf, watermarkBase) {
         top: margin, // canto superior direito
       },
     ])
-    .jpeg({ quality: 82 })
+    .jpeg({ quality: 74 })
     .toBuffer();
 }
 
@@ -193,16 +197,16 @@ async function main() {
 
       const resizedBuf = await sharp(tempPreview)
         .rotate(rotateDeg || undefined)
-        .resize({ width: 2400, height: 2400, fit: "inside", withoutEnlargement: true })
-        .jpeg({ quality: 82 })
+        .resize({ width: 1920, height: 1920, fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: 74 })
         .toBuffer();
       const displayBuf = await applyWatermark(resizedBuf, watermarkBase);
       await sharp(displayBuf).toFile(displayOut);
 
       const thumbBuf = await sharp(tempPreview)
         .rotate(rotateDeg || undefined)
-        .resize({ width: 600, height: 600, fit: "inside", withoutEnlargement: true })
-        .jpeg({ quality: 75 })
+        .resize({ width: 480, height: 480, fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: 65 })
         .toBuffer();
       await sharp(thumbBuf).toFile(thumbOut);
 
