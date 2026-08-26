@@ -57,21 +57,37 @@ export default function HomePage() {
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
             {[
-              { value: "30+", label: "Palestrantes" },
-              { value: "3",   label: "Dias de Evento" },
-              { value: "500+", label: "Participantes" },
-              { value: "10+",  label: "Painéis Temáticos" },
+              {
+                tag: "Palestrantes",
+                text: "Grandes nomes de peso como Pedro Lenza, Rogério Greco, Pedro Barretto e Bruno Zampier",
+              },
+              { value: "3", label: "Dias de Evento" },
+              { value: "1000+", label: "Participantes" },
+              { value: "+15", label: "Minicursos Capacitantes" },
             ].map((stat) => (
               <div
-                key={stat.label}
-                className="glass border-gold-glow rounded-2xl py-8 px-4 flex flex-col items-center gap-2"
+                key={stat.tag ?? stat.label}
+                className="glass border-gold-glow rounded-2xl py-8 px-4 flex flex-col items-center gap-2 text-center"
               >
-                <span className="text-4xl font-extrabold text-gold-glow">
-                  {stat.value}
-                </span>
-                <span className="text-sm text-[#a399b8] font-medium">
-                  {stat.label}
-                </span>
+                {stat.tag ? (
+                  <>
+                    <span className="text-xs font-bold tracking-[0.2em] text-gold-glow uppercase">
+                      {stat.tag}
+                    </span>
+                    <span className="text-sm text-[#a399b8] font-medium leading-snug">
+                      {stat.text}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-4xl font-extrabold text-gold-glow">
+                      {stat.value}
+                    </span>
+                    <span className="text-sm text-[#a399b8] font-medium">
+                      {stat.label}
+                    </span>
+                  </>
+                )}
               </div>
             ))}
           </div>
