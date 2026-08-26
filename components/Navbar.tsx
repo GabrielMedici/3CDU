@@ -38,7 +38,8 @@ export default function Navbar() {
           <div
             className="relative w-[180px] h-[103px] transition-all duration-300 group-hover:scale-105"
             style={{
-              filter: "drop-shadow(0 10px 8px rgba(0,0,0,0.4)) drop-shadow(0 0 12px rgba(232,170,26,0.3))",
+              filter:
+                "drop-shadow(0 6px 6px rgba(0,0,0,0.5)) drop-shadow(0 0 10px rgba(232,170,26,0.4)) drop-shadow(0 0 18px rgba(133,51,240,0.3))",
             }}
           >
             <Image
