@@ -58,8 +58,8 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16">
             {[
               {
-                tag: "Palestrantes",
-                text: "Grandes nomes de peso como Pedro Lenza, Rogério Greco, Pedro Barretto e Bruno Zampier",
+                tag: "Palestrantes Referência no Direito",
+                text: "Incluindo grandes nomes de peso como Pedro Lenza, Rogério Greco, Pedro Barretto e Bruno Zampier",
               },
               { value: "3", label: "Dias de Evento" },
               { value: "1000+", label: "Participantes" },
