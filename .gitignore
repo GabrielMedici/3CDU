@@ -42,6 +42,7 @@ Thumbs.db
 # convert-raw — nunca devem ir pro repositório, só pro Supabase via publish
 fotos_dia_*/
 **/convertidas/
+/revisar/
 *.CR2
 *.CR3
 *.NEF
