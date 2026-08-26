@@ -43,21 +43,12 @@ export default function Navbar() {
           >
             <Image
               src="/images/logo.png"
-              alt="Logo 3CDU"
+              alt="3º Congresso de Direito Unicesumar — 3CDU"
               fill
               sizes="180px"
               className="object-contain"
-              style={{ mixBlendMode: "screen" }}
               priority
             />
-          </div>
-          <div className="hidden sm:block -ml-8">
-            <p className="text-[12px] font-semibold tracking-[0.25em] text-[#a399b8] uppercase">
-              Unicesumar
-            </p>
-            <p className="text-lg font-bold text-white leading-tight">
-              3º<span className="text-gold-glow">CDU</span>
-            </p>
           </div>
         </Link>
 
