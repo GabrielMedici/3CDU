@@ -40,7 +40,7 @@ export default function DownloadButton({
       URL.revokeObjectURL(blobUrl);
     } catch {
       // Se o fetch falhar (ex: CORS bloqueado pelo bucket), cai pro
-      // comportamento padrão: abre a foto numa aba nova pra salvar manualmente.
+      // comportamento padrão: abre a foto numa aba nova para salvar manualmente.
       window.open(url, "_blank", "noopener,noreferrer");
     } finally {
       setLoading(false);

@@ -78,7 +78,7 @@ function SpeakerCard({
     >
       {/* Foto / Avatar */}
       {/* Fotos reais vêm de flyers com nome/data já gravados na parte inferior da
-          imagem; usamos um recorte mais baixo (em vez de aspect-square) pra cortar
+          imagem; usamos um recorte mais baixo (em vez de aspect-square) para cortar
           essa faixa de texto e evitar duplicar com o nome exibido abaixo do card. */}
       <div className={`relative w-full overflow-hidden ${photo ? "aspect-[4/3]" : "aspect-square"}`}>
         {photo ? (

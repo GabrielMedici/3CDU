@@ -1,28 +1,28 @@
-// Converte fotos RAW (.CR2, .NEF, .ARW, .DNG, ...) para JPEG otimizado pronto pra
+// Converte fotos RAW (.CR2, .NEF, .ARW, .DNG, ...) para JPEG otimizado pronto para
 // subir na galeria, e faz uma triagem automática de qualidade (foco, exposição,
-// possíveis duplicatas de rajada) pra facilitar a limpeza manual.
+// possíveis duplicatas de rajada) para facilitar a limpeza manual.
 //
 // Extrai a prévia JPEG em resolução total já gravada dentro do arquivo RAW pela
 // câmera (rápido, sem demosaicing) e gera duas versões de cada foto:
 //   - display (1920px, qualidade 74) — a foto em si, com marca d'água, usada
-//             pra download (usa public/images/watermark-logo.png)
+//             para download (usa public/images/watermark-logo.png)
 //   - thumb   (480px,  qualidade 65) — miniatura pro grid da galeria, sem marca
 //
-// Tamanhos reduzidos a partir de 26/08/2026 pra economizar banda do proxy de
+// Tamanhos reduzidos a partir de 26/08/2026 para economizar banda do proxy de
 // cache do Worker (worker/index.js) — o Dia 1 já publicado usa os valores
 // antigos (2400px/82 e 600px/75) e não precisa ser reprocessado.
 //
 // A triagem é só um AUXÍLIO — nada é apagado. Fotos com sinal de problema
 // (desfocada, muito escura/estourada, possível duplicata de rajada) continuam
 // normalmente em display/thumb, e além disso ganham uma cópia dentro de
-// revisar/<motivo>/ pra você bater o olho rapidamente só nessas, em vez de
+// revisar/<motivo>/ para você bater o olho rapidamente só nessas, em vez de
 // rever a pasta inteira.
 //
 // A nitidez é avaliada RELATIVA ao próprio lote (percentil), porque um valor
 // fixo não faz sentido comparando câmeras/lentes/cenários diferentes — o que
 // importa é achar as fotos mais moles perto das outras do mesmo eventos.
 // Duplicata de rajada exige hash visual parecido E horário de captura próximo
-// (few segundos), pra não confundir "mesmo fundo do evento" com "mesma foto".
+// (few segundos), para não confundir "mesmo fundo do evento" com "mesma foto".
 //
 // Uso:
 //   npm run convert-raw -- "<pasta com os RAW>" [pasta-de-saida]
@@ -45,7 +45,7 @@ const RAW_EXTENSIONS = [".cr2", ".cr3", ".nef", ".arw", ".dng", ".raf", ".orf"];
 
 // Limiares da triagem automática — ajuste aqui se estiver pegando fotos boas
 // como "ruins" ou deixando passar fotos ruins.
-const BLUR_PERCENTILE = 0.10;          // as 10% menos nítidas do lote vão pra revisão
+const BLUR_PERCENTILE = 0.10;          // as 10% menos nítidas do lote vão para revisão
 const DARK_MEAN_THRESHOLD = 25;        // abaixo disso (0-255) = muito escura (absoluto, não relativo)
 const BRIGHT_MEAN_THRESHOLD = 230;     // acima disso (0-255) = estourada (absoluto)
 const DUPLICATE_HAMMING_THRESHOLD = 3; // diferença de bits <= isso = hash visual parecido
@@ -82,7 +82,7 @@ async function analyzeQuality(previewPath, rotateDeg) {
     .stats();
   const sharpness = lapStats.channels[0].stdev;
 
-  // Hash perceptual simples (aHash 8x8) pra detectar rajadas quase idênticas
+  // Hash perceptual simples (aHash 8x8) para detectar rajadas quase idênticas
   const hashBuf = await sharp(previewPath).rotate(rotateDeg || undefined).resize(8, 8, { fit: "fill" }).greyscale().raw().toBuffer();
   let hashSum = 0;
   for (const v of hashBuf) hashSum += v;
@@ -129,7 +129,7 @@ function hammingDistance(a, b) {
 // A prévia JPEG extraída de dentro do RAW nem sempre carrega sua própria
 // etiqueta de orientação EXIF — só o arquivo RAW original carrega. Por isso
 // lemos a orientação direto do RAW e giramos a prévia explicitamente, em vez
-// de confiar só no .rotate() automático do Sharp (que olha pra prévia).
+// de confiar só no .rotate() automático do Sharp (que olha para a prévia).
 function orientationToDegrees(tags) {
   const o = tags.Orientation;
   if (o == null) return 0;
@@ -141,7 +141,7 @@ function orientationToDegrees(tags) {
 }
 
 function captureEpochSeconds(tags) {
-  // exiftool-vendored já devolve DateTimeOriginal como objeto ExifDateTime quando dá pra parsear
+  // exiftool-vendored já devolve DateTimeOriginal como objeto ExifDateTime quando dá para parsear
   const dt = tags.DateTimeOriginal || tags.CreateDate;
   if (!dt) return null;
   const ms = dt.toMillis ? dt.toMillis() : Date.parse(String(dt));
@@ -238,7 +238,7 @@ async function main() {
   const blurCutoffIdx = Math.floor(sortedSharpness.length * BLUR_PERCENTILE);
   const blurThreshold = sortedSharpness[blurCutoffIdx] ?? 0;
 
-  // ── Passo 3: sinalizar e copiar pra revisar/, na ordem original de captura ─
+  // ── Passo 3: sinalizar e copiar para revisar/, na ordem original de captura ─
   let flaggedBlur = 0;
   let flaggedExposure = 0;
   let flaggedDup = 0;
@@ -291,7 +291,7 @@ async function main() {
 
   console.log("\n\n=== Resumo ===");
   console.log(`Convertidas: ${ok}  |  Falharam: ${failed}`);
-  console.log(`Limiar de nitidez calculado pra esse lote: ${blurThreshold.toFixed(1)} (percentil ${(BLUR_PERCENTILE * 100).toFixed(0)}%)`);
+  console.log(`Limiar de nitidez calculado para esse lote: ${blurThreshold.toFixed(1)} (percentil ${(BLUR_PERCENTILE * 100).toFixed(0)}%)`);
   console.log(`Sinalizadas p/ revisão -> desfocada: ${flaggedBlur}  |  exposição: ${flaggedExposure}  |  possível duplicata: ${flaggedDup}`);
   console.log(`Tamanho total (display+thumb): ${(totalBytes / 1024 / 1024).toFixed(1)} MB`);
   console.log(`Média por foto: ${avgPerPhotoKB.toFixed(0)} KB`);

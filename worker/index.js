@@ -3,10 +3,10 @@
 // borda das fotos do Supabase Storage.
 //
 // Por que: a galeria carrega as fotos direto do Supabase, e o plano
-// gratuito do Supabase só dá 10GB de banda/mês — pouco pra um evento com
+// gratuito do Supabase só dá 10GB de banda/mês — pouco para um evento com
 // milhares de visitantes vendo as mesmas fotos. Com esse proxy, a primeira
 // requisição de cada foto por região busca no Supabase e guarda em cache na
-// borda da Cloudflare (Workers free = ilimitado pra assets estáticos, e o
+// borda da Cloudflare (Workers free = ilimitado para assets estáticos, e o
 // cache aqui evita repetir a busca no Supabase pras próximas pessoas).
 //
 // Qualquer rota que NÃO seja /img/* nunca passa por aqui — o Cloudflare já

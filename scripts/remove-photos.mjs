@@ -1,5 +1,5 @@
 // Remove fotos publicadas (Storage + linha na tabela `photos`) pelo nome do
-// arquivo — útil pra tirar do ar fotos de teste, borradas, ou enviadas por
+// arquivo — útil para tirar do ar fotos de teste, borradas, ou enviadas por
 // engano, sem precisar mexer no restante do dia.
 //
 // Uso:

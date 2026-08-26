@@ -15,7 +15,7 @@ interface UploadFile {
 }
 
 // ── Compressão client-side ───────────────────────────────────────────────
-// Redimensiona e recomprime a foto no navegador antes do upload, pra não gastar
+// Redimensiona e recomprime a foto no navegador antes do upload, para não gastar
 // o storage/banda do Supabase com arquivos de câmera em tamanho original.
 async function compressImage(file: File, maxDim = 2400, quality = 0.82): Promise<Blob> {
   const bitmap = await createImageBitmap(file);
@@ -56,7 +56,7 @@ export default function AdminUploadPage() {
   const [authChecked, setAuthChecked] = useState(false);
 
   // ── Guarda de autenticação ───────────────────────────────────────────────
-  // Sem isso, a página renderizava normalmente pra qualquer visitante — só o
+  // Sem isso, a página renderizava normalmente para qualquer visitante — só o
   // clique em "Enviar" checava login. Agora barra o acesso já na entrada.
   useEffect(() => {
     let active = true;
@@ -455,7 +455,7 @@ export default function AdminUploadPage() {
                 <div>
                   <p className="text-green-400 font-semibold text-sm">Upload concluído!</p>
                   <p className="text-[#a399b8] text-xs mt-0.5">
-                    Guardado como backup. Pra aparecer na galeria, processe e
+                    Guardado como backup. Para aparecer na galeria, processe e
                     publique com <code className="text-[#e8aa1a]">npm run convert-raw</code> +{" "}
                     <code className="text-[#e8aa1a]">npm run publish</code>.
                   </p>
@@ -477,7 +477,7 @@ export default function AdminUploadPage() {
             </li>
             <li className="flex gap-2">
               <span className="text-[#e8aa1a] font-bold">2.</span>
-              Pra publicar de verdade: no computador com as fotos, rode{" "}
+              Para publicar de verdade: no computador com as fotos, rode{" "}
               <code className="text-[#e8aa1a] text-xs">npm run convert-raw</code>{" "}
               (converte RAW, aplica marca d&apos;água e separa as duvidosas).
             </li>

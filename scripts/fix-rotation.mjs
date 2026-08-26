@@ -1,4 +1,4 @@
-// Gira fotos específicas que saíram de lado (sem etiqueta EXIF pra detectar
+// Gira fotos específicas que saíram de lado (sem etiqueta EXIF para detectar
 // automaticamente) e reenvia pro Supabase, sobrescrevendo o arquivo no mesmo
 // caminho — não precisa mexer na tabela `photos` nem publicar de novo, porque
 // a URL pública não muda.
@@ -50,7 +50,7 @@ async function fixOne(baseName) {
   const displayBuf = await sharp(await readFile(displayPath)).rotate(graus).jpeg({ quality: 82 }).toBuffer();
   const thumbBuf = await sharp(await readFile(thumbPath)).rotate(graus).jpeg({ quality: 75 }).toBuffer();
 
-  // Sobrescreve local também, pra ficar consistente se rodar de novo
+  // Sobrescreve local também, para ficar consistente se rodar de novo
   await sharp(displayBuf).toFile(displayPath);
   await sharp(thumbBuf).toFile(thumbPath);
 

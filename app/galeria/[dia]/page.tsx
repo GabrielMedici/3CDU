@@ -62,7 +62,7 @@ async function getPhotos(dia: number): Promise<Photo[]> {
   // Passa as URLs pelo proxy de cache do Worker (ver worker/index.js) em vez
   // do Supabase direto. Se o dia ainda não tem fotos publicadas, retorna uma
   // lista vazia — a página mostra o estado "Em breve..." nesse caso, sem
-  // recorrer a fotos de exemplo (evita mostrar imagens genéricas pra quem
+  // recorrer a fotos de exemplo (evita mostrar imagens genéricas para quem
   // está acompanhando o evento de verdade).
   return (data ?? []).map((photo) => ({
     ...photo,

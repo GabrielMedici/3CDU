@@ -12,9 +12,9 @@
 //   npm run publish -- --dia 1 "<pasta convertidas>"
 //
 // É seguro rodar de novo na mesma pasta: fotos já publicadas (mesmo nome de
-// arquivo, mesmo dia) são puladas, então dá pra rodar a cada leva nova de fotos.
+// arquivo, mesmo dia) são puladas, então dá para rodar a cada leva nova de fotos.
 //
-// Use --force pra reenviar TUDO de novo mesmo o que já foi publicado (ex:
+// Use --force para reenviar TUDO de novo mesmo o que já foi publicado (ex:
 // depois de trocar a marca d'água ou reprocessar o lote inteiro) — sobrescreve
 // os arquivos no Storage sem duplicar linha na tabela.
 

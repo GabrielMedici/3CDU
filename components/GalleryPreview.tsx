@@ -16,8 +16,8 @@ async function getPreviewPhotos(): Promise<PreviewPhoto[]> {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy"
     );
 
-    // Pega uma leva recente (não precisa da tabela inteira só pra uma prévia)
-    // e embaralha aqui — é "aleatório" a cada build, o suficiente pra uma prévia.
+    // Pega uma leva recente (não precisa da tabela inteira só para uma prévia)
+    // e embaralha aqui — é "aleatório" a cada build, o suficiente para uma prévia.
     const { data } = await supabase
       .from("photos")
       .select("id, dia_evento, thumbnail_url")
