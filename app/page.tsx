@@ -2,6 +2,7 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import SpeakersCarousel from "@/components/SpeakersCarousel";
 import ScheduleBoard from "@/components/ScheduleBoard";
+import GalleryPreview from "@/components/GalleryPreview";
 import LocationSection from "@/components/LocationSection";
 import FaqSection from "@/components/FaqSection";
 import Link from "next/link";
@@ -104,11 +105,7 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-          <div className="glass border-gold-glow rounded-3xl p-12 text-center">
-            <p className="text-[#a399b8] text-lg">
-              As fotos do evento aparecerão aqui após o congresso.
-            </p>
-          </div>
+          <GalleryPreview />
         </div>
       </section>
 
