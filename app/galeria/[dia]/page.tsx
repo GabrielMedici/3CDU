@@ -24,23 +24,35 @@ interface PageProps {
 // ── Busca Server-Side (RSC) ───────────────────────────────────────────────
 async function getPhotos(dia: number): Promise<Photo[]> {
   let data: Photo[] | null = null;
-  
+
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL || "https://dummy.supabase.co",
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "dummy"
     );
 
-    const result = await supabase
-      .from("photos")
-      .select("id, dia_evento, thumbnail_url, watermarked_url, created_at")
-      .eq("dia_evento", dia)
-      .order("created_at", { ascending: false });
+    // O PostgREST do Supabase limita cada resposta a no máximo 1000 linhas
+    // (max_rows), então com >1000 fotos por dia precisamos paginar com
+    // .range() até uma página vir incompleta.
+    const PAGE_SIZE = 1000;
+    const pages: Photo[] = [];
+    for (let from = 0; ; from += PAGE_SIZE) {
+      const result = await supabase
+        .from("photos")
+        .select("id, dia_evento, thumbnail_url, watermarked_url, created_at")
+        .eq("dia_evento", dia)
+        .order("created_at", { ascending: false })
+        .range(from, from + PAGE_SIZE - 1);
 
-    if (result.error) {
-      console.error(`[getPhotos] Supabase retornou erro pro dia ${dia}:`, result.error);
+      if (result.error) {
+        console.error(`[getPhotos] Supabase retornou erro pro dia ${dia}:`, result.error);
+        break;
+      }
+      const page = result.data ?? [];
+      pages.push(...page);
+      if (page.length < PAGE_SIZE) break;
     }
-    data = result.data;
+    data = pages;
   } catch (error) {
     // Falha silenciosa no modo dev (ex: sem internet ou sem chaves .env)
     // para não quebrar a tela e ir direto para o Mock.
