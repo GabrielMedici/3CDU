@@ -12,6 +12,11 @@ interface Photo {
   created_at: string;
 }
 
+// Quantas miniaturas mostrar por vez. Com >1000 fotos por dia e Supabase no
+// plano gratuito (10GB de banda/mês), renderizar tudo de uma vez estoura a
+// cota rápido — só carrega mais quando o usuário pedir.
+const PAGE_SIZE = 40;
+
 /* ── Grid de fotos + visualizador em tela cheia ───────────────────────────
    Clicar numa foto abre ela em tamanho grande (watermarked_url) antes do
    download, em vez de baixar direto a partir da miniatura. */
@@ -23,6 +28,14 @@ export default function PhotoGallery({
   diaNum: number;
 }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [diaNum]);
+
+  const visiblePhotos = photos.slice(0, visibleCount);
+  const hasMore = visibleCount < photos.length;
 
   const close = useCallback(() => setOpenIndex(null), []);
   const prev = useCallback(
@@ -55,7 +68,7 @@ export default function PhotoGallery({
     <>
       {/* Grid Masonry-like */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {photos.map((photo, idx) => (
+        {visiblePhotos.map((photo, idx) => (
           <div
             key={photo.id}
             id={`photo-card-${photo.id}`}
@@ -120,6 +133,22 @@ export default function PhotoGallery({
           </div>
         ))}
       </div>
+
+      {/* Carregar mais — evita baixar as miniaturas de todas as fotos de uma vez */}
+      {hasMore && (
+        <div className="flex flex-col items-center gap-2 mt-10">
+          <button
+            type="button"
+            onClick={() => setVisibleCount((c) => Math.min(c + PAGE_SIZE, photos.length))}
+            className="px-8 py-3 rounded-full border border-[rgba(232,170,26,0.35)] text-[#e8aa1a] text-sm font-semibold hover:bg-[rgba(232,170,26,0.08)] hover:border-[rgba(232,170,26,0.6)] transition-all duration-200"
+          >
+            Carregar mais fotos
+          </button>
+          <p className="text-xs text-[#6b5e82]">
+            Mostrando {visiblePhotos.length} de {photos.length} fotos
+          </p>
+        </div>
+      )}
 
       {/* ── Visualizador em tela cheia ─────────────────────────────────── */}
       {openPhoto && (
