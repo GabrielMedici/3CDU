@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import DownloadButton from "@/components/DownloadButton";
 import { handleImageRetry } from "@/lib/imageRetry";
@@ -13,10 +13,28 @@ interface Photo {
   created_at: string;
 }
 
-// Quantas miniaturas mostrar por vez. Com >1000 fotos por dia e Supabase no
-// plano gratuito (10GB de banda/mês), renderizar tudo de uma vez estoura a
-// cota rápido — só carrega mais quando o usuário pedir.
+// Quantas miniaturas mostrar por página. Com >1000 fotos por dia e Supabase
+// no plano gratuito (10GB de banda/mês), renderizar tudo de uma vez estoura
+// a cota rápido — só carrega a página atual, e trocar de página descarrega
+// as anteriores (ao contrário de "carregar mais", que ia empilhando tudo).
 const PAGE_SIZE = 24;
+
+// Lista de números de página truncada (com "…") em vez de listar todas —
+// com ~60 páginas isso ficaria enorme. Sempre mostra a primeira, a última,
+// e uma vizinhança em torno da página atual.
+function getPageNumbers(current: number, total: number): (number | "…")[] {
+  const delta = 1;
+  const pages: (number | "…")[] = [];
+  let prev = 0;
+  for (let i = 1; i <= total; i++) {
+    if (i === 1 || i === total || (i >= current - delta && i <= current + delta)) {
+      if (prev && i - prev > 1) pages.push("…");
+      pages.push(i);
+      prev = i;
+    }
+  }
+  return pages;
+}
 
 /* ── Grid de fotos + visualizador em tela cheia ───────────────────────────
    Clicar numa foto abre ela em tamanho grande (watermarked_url) antes do
@@ -29,14 +47,22 @@ export default function PhotoGallery({
   diaNum: number;
 }) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const [currentPage, setCurrentPage] = useState(1);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setVisibleCount(PAGE_SIZE);
+    setCurrentPage(1);
   }, [diaNum]);
 
-  const visiblePhotos = photos.slice(0, visibleCount);
-  const hasMore = visibleCount < photos.length;
+  const totalPages = Math.max(1, Math.ceil(photos.length / PAGE_SIZE));
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const visiblePhotos = photos.slice(pageStart, pageStart + PAGE_SIZE);
+
+  const goToPage = (page: number) => {
+    const clamped = Math.min(Math.max(1, page), totalPages);
+    setCurrentPage(clamped);
+    gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const close = useCallback(() => setOpenIndex(null), []);
   const prev = useCallback(
@@ -68,13 +94,15 @@ export default function PhotoGallery({
   return (
     <>
       {/* Grid Masonry-like */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {visiblePhotos.map((photo, idx) => (
+      <div ref={gridRef} className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {visiblePhotos.map((photo, i) => {
+          const idx = pageStart + i; // índice absoluto dentro do dia inteiro
+          return (
           <div
             key={photo.id}
             id={`photo-card-${photo.id}`}
             className="photo-card group"
-            style={{ animationDelay: `${idx * 0.05}s` }}
+            style={{ animationDelay: `${i * 0.05}s` }}
           >
             {/* Thumbnail — div (não <button>) porque contém o botão de download dentro */}
             <div
@@ -97,7 +125,7 @@ export default function PhotoGallery({
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                  loading={idx < 10 ? "eager" : "lazy"}
+                  loading={i < 10 ? "eager" : "lazy"}
                   onError={handleImageRetry}
                 />
               ) : (
@@ -133,21 +161,63 @@ export default function PhotoGallery({
               </div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* Carregar mais — evita baixar as miniaturas de todas as fotos de uma vez */}
-      {hasMore && (
-        <div className="flex flex-col items-center gap-2 mt-10">
-          <button
-            type="button"
-            onClick={() => setVisibleCount((c) => Math.min(c + PAGE_SIZE, photos.length))}
-            className="px-8 py-3 rounded-full border border-[rgba(232,170,26,0.35)] text-[#e8aa1a] text-sm font-semibold hover:bg-[rgba(232,170,26,0.08)] hover:border-[rgba(232,170,26,0.6)] transition-all duration-200"
-          >
-            Carregar mais fotos
-          </button>
+      {/* Paginação numerada — pular direto pro meio/fim sem carregar tudo */}
+      {totalPages > 1 && (
+        <div className="flex flex-col items-center gap-3 mt-10">
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              aria-label="Página anterior"
+              className="w-9 h-9 flex items-center justify-center rounded-full border border-[rgba(232,170,26,0.3)] text-[#e8aa1a] hover:bg-[rgba(232,170,26,0.08)] hover:border-[rgba(232,170,26,0.6)] transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+              </svg>
+            </button>
+
+            {getPageNumbers(currentPage, totalPages).map((p, i) =>
+              p === "…" ? (
+                <span key={`ellipsis-${i}`} className="px-1 text-sm text-[#6b5e82]">
+                  …
+                </span>
+              ) : (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => goToPage(p)}
+                  aria-current={p === currentPage ? "page" : undefined}
+                  className={`min-w-9 h-9 px-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                    p === currentPage
+                      ? "btn-gold shadow-gold"
+                      : "border border-[rgba(232,170,26,0.3)] text-[#c299ff] hover:border-[rgba(232,170,26,0.6)] hover:text-white hover:bg-[rgba(232,170,26,0.08)]"
+                  }`}
+                >
+                  {p}
+                </button>
+              )
+            )}
+
+            <button
+              type="button"
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              aria-label="Próxima página"
+              className="w-9 h-9 flex items-center justify-center rounded-full border border-[rgba(232,170,26,0.3)] text-[#e8aa1a] hover:bg-[rgba(232,170,26,0.08)] hover:border-[rgba(232,170,26,0.6)] transition-all duration-200 disabled:opacity-30 disabled:pointer-events-none"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+              </svg>
+            </button>
+          </div>
+
           <p className="text-xs text-[#6b5e82]">
-            Mostrando {visiblePhotos.length} de {photos.length} fotos
+            Página {currentPage} de {totalPages} — {photos.length} fotos ao todo
           </p>
         </div>
       )}
