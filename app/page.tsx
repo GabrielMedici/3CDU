@@ -71,19 +71,19 @@ export default function HomePage() {
               >
                 {stat.tag ? (
                   <>
-                    <span className="text-xs font-bold tracking-[0.2em] text-gold-glow uppercase">
+                    <span className="w-full text-center text-xs font-bold tracking-[0.2em] text-gold-glow uppercase">
                       {stat.tag}
                     </span>
-                    <span className="text-sm text-[#a399b8] font-medium leading-snug">
+                    <span className="w-full text-center text-sm text-[#a399b8] font-medium leading-snug">
                       {stat.text}
                     </span>
                   </>
                 ) : (
                   <>
-                    <span className="text-4xl font-extrabold text-gold-glow">
+                    <span className="w-full text-center text-4xl font-extrabold text-gold-glow">
                       {stat.value}
                     </span>
-                    <span className="text-sm text-[#a399b8] font-medium">
+                    <span className="w-full text-center text-sm text-[#a399b8] font-medium">
                       {stat.label}
                     </span>
                   </>
