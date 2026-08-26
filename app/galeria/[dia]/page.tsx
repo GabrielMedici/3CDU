@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import PhotoGallery from "@/components/PhotoGallery";
+import { toProxiedUrl } from "@/lib/imageProxy";
 
 export function generateStaticParams() {
   return [{ dia: "1" }, { dia: "2" }, { dia: "3" }];
@@ -58,9 +59,14 @@ async function getPhotos(dia: number): Promise<Photo[]> {
     // para não quebrar a tela e ir direto para o Mock.
   }
 
-  // Se retornou dados válidos do Supabase, usamos.
+  // Se retornou dados válidos do Supabase, usamos — passando as URLs pelo
+  // proxy de cache do Worker (ver worker/index.js) em vez do Supabase direto.
   if (data && data.length > 0) {
-    return data;
+    return data.map((photo) => ({
+      ...photo,
+      thumbnail_url: toProxiedUrl(photo.thumbnail_url),
+      watermarked_url: toProxiedUrl(photo.watermarked_url),
+    }));
   }
 
   // ── MOCK DATA PARA SIMULAÇÃO DA GALERIA ──

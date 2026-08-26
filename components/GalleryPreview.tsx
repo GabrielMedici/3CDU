@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
 import Link from "next/link";
+import { toProxiedUrl } from "@/lib/imageProxy";
 
 interface PreviewPhoto {
   id: string;
@@ -26,7 +27,10 @@ async function getPreviewPhotos(): Promise<PreviewPhoto[]> {
     if (!data || data.length === 0) return [];
 
     const shuffled = [...data].sort(() => Math.random() - 0.5);
-    return shuffled.slice(0, 10);
+    return shuffled.slice(0, 10).map((photo) => ({
+      ...photo,
+      thumbnail_url: toProxiedUrl(photo.thumbnail_url),
+    }));
   } catch {
     return [];
   }
