@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import DownloadButton from "@/components/DownloadButton";
+import { handleImageRetry } from "@/lib/imageRetry";
 
 interface Photo {
   id: string;
@@ -97,6 +98,7 @@ export default function PhotoGallery({
                   className="object-cover transition-transform duration-500 group-hover:scale-110"
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
                   loading={idx < 10 ? "eager" : "lazy"}
+                  onError={handleImageRetry}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-[rgba(43,0,87,0.5)]">
@@ -194,6 +196,7 @@ export default function PhotoGallery({
               src={openPhoto.watermarked_url || openPhoto.thumbnail_url || ""}
               alt={`Foto ${(openIndex ?? 0) + 1} — Dia ${diaNum} do 3CDU`}
               className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
+              onError={handleImageRetry}
             />
           </div>
 

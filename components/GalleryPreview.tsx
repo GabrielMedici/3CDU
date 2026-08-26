@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
-import Image from "next/image";
 import Link from "next/link";
 import { toProxiedUrl } from "@/lib/imageProxy";
+import RetryImage from "@/components/RetryImage";
 
 interface PreviewPhoto {
   id: string;
@@ -58,7 +58,7 @@ export default async function GalleryPreview() {
           className="relative aspect-square rounded-xl overflow-hidden group"
         >
           {photo.thumbnail_url && (
-            <Image
+            <RetryImage
               src={photo.thumbnail_url}
               alt={`Prévia da galeria — Dia ${photo.dia_evento}`}
               fill
