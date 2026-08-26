@@ -38,6 +38,21 @@ Thumbs.db
 /Id-Visual/
 /Imagens_para_Upar/
 
+# Fotos originais do evento (RAW/JPEG de câmera) e as pastas geradas pelo
+# convert-raw — nunca devem ir pro repositório, só pro Supabase via publish
+fotos_dia_*/
+**/convertidas/
+*.CR2
+*.CR3
+*.NEF
+*.ARW
+*.DNG
+*.RAF
+*.ORF
+
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Anotações pessoais / arquivos soltos de terminal
+Comandos.txt
