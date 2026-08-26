@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "convert-raw": "node scripts/convert-raw.mjs",
-    "publish": "node --env-file=.env scripts/publish.mjs"
+    "publish": "node --env-file=.env scripts/publish.mjs",
+    "fix-rotation": "node --env-file=.env scripts/fix-rotation.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
