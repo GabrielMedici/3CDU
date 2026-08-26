@@ -110,6 +110,9 @@ export default async function GaleriaPage({ params }: PageProps) {
         </p>
 
         {/* Seletores de Dia */}
+        <p className="text-xs text-[#a399b8] mb-3 animate-fade-in">
+          Clique no dia que quer ver as fotos para carregar todas
+        </p>
         <div className="flex justify-center gap-3 animate-fade-in">
           {[1, 2, 3].map((d) => (
             <Link
