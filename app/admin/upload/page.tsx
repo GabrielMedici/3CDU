@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -14,6 +14,36 @@ interface UploadFile {
   previewUrl: string;
 }
 
+// ── Compressão client-side ───────────────────────────────────────────────
+// Redimensiona e recomprime a foto no navegador antes do upload, pra não gastar
+// o storage/banda do Supabase com arquivos de câmera em tamanho original.
+async function compressImage(file: File, maxDim = 2400, quality = 0.82): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  let { width, height } = bitmap;
+
+  if (width > maxDim || height > maxDim) {
+    const scale = maxDim / Math.max(width, height);
+    width = Math.round(width * scale);
+    height = Math.round(height * scale);
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Canvas 2D não suportado");
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  bitmap.close();
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => (blob ? resolve(blob) : reject(new Error("Falha ao comprimir imagem"))),
+      "image/jpeg",
+      quality
+    );
+  });
+}
+
 // ── Componente Admin Upload ────────────────────────────────────────────────
 export default function AdminUploadPage() {
   const router = useRouter();
@@ -23,6 +53,32 @@ export default function AdminUploadPage() {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [globalStatus, setGlobalStatus] = useState<"idle" | "uploading" | "done" | "error">("idle");
+  const [authChecked, setAuthChecked] = useState(false);
+
+  // ── Guarda de autenticação ───────────────────────────────────────────────
+  // Sem isso, a página renderizava normalmente pra qualquer visitante — só o
+  // clique em "Enviar" checava login. Agora barra o acesso já na entrada.
+  useEffect(() => {
+    let active = true;
+
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!active) return;
+      if (!user) {
+        router.replace("/admin/login");
+      } else {
+        setAuthChecked(true);
+      }
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) router.replace("/admin/login");
+    });
+
+    return () => {
+      active = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, [router]);
 
   // ── Adicionar arquivos ──────────────────────────────────────────────────
   const addFiles = useCallback((raw: FileList | File[]) => {
@@ -82,15 +138,24 @@ export default function AdminUploadPage() {
           prev.map((f) => f.id === item.id ? { ...f, status: "uploading", progress: 0 } : f)
         );
 
-        const ext      = item.file.name.split(".").pop() ?? "jpg";
-        const safeName = item.file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-        const path     = `dia_${dia}/${Date.now()}_${safeName}`;
+        // Comprime no navegador antes de enviar (economiza storage/banda do Supabase)
+        let uploadBlob: Blob = item.file;
+        try {
+          uploadBlob = await compressImage(item.file);
+        } catch {
+          // Se a compressão falhar por algum motivo, sobe o arquivo original mesmo
+        }
+
+        const safeName = item.file.name
+          .replace(/\.[^.]+$/, "")
+          .replace(/[^a-zA-Z0-9._-]/g, "_");
+        const path = `dia_${dia}/${Date.now()}_${safeName}.jpg`;
 
         // Upload direto para o bucket raw-photos (client-side, sem passar pela API Next.js)
         const { error } = await supabase.storage
           .from("raw-photos")
-          .upload(path, item.file, {
-            contentType: item.file.type,
+          .upload(path, uploadBlob, {
+            contentType: "image/jpeg",
             upsert:      false,
           });
 
@@ -123,6 +188,17 @@ export default function AdminUploadPage() {
   const totalDone      = files.filter((f) => f.status === "done").length;
   const totalError     = files.filter((f) => f.status === "error").length;
   const totalUploading = files.filter((f) => f.status === "uploading").length;
+
+  if (!authChecked) {
+    return (
+      <main
+        className="min-h-screen flex items-center justify-center"
+        style={{ backgroundColor: "#0d0019" }}
+      >
+        <p className="text-[#a399b8] text-sm">Verificando acesso...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="min-h-screen" style={{ backgroundColor: "#0d0019" }}>
