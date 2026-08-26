@@ -109,16 +109,21 @@ export default function HomePage() {
                 Galeria de Fotos
               </h2>
             </div>
-            <div className="flex gap-3">
-              {[1, 2, 3].map((dia) => (
-                <Link
-                  key={dia}
-                  href={`/galeria/${dia}`}
-                  className="px-5 py-2.5 rounded-full text-sm font-semibold border border-[rgba(232,170,26,0.3)] text-[#e8aa1a] hover:bg-[rgba(232,170,26,0.1)] hover:border-[rgba(232,170,26,0.6)] transition-all duration-200"
-                >
-                  Dia {dia}
-                </Link>
-              ))}
+            <div className="flex flex-col items-start sm:items-end gap-2">
+              <p className="text-xs text-[#a399b8]">
+                Clique no dia que quer ver as fotos para carregar todas
+              </p>
+              <div className="flex gap-3">
+                {[1, 2, 3].map((dia) => (
+                  <Link
+                    key={dia}
+                    href={`/galeria/${dia}`}
+                    className="px-5 py-2.5 rounded-full text-sm font-semibold border border-[rgba(232,170,26,0.3)] text-[#e8aa1a] hover:bg-[rgba(232,170,26,0.1)] hover:border-[rgba(232,170,26,0.6)] transition-all duration-200"
+                  >
+                    Dia {dia}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
           <GalleryPreview />
