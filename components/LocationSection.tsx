@@ -18,9 +18,10 @@ export default function LocationSection() {
             <h3 className="text-xl font-bold text-white mb-1">Campus UniCesumar</h3>
             <p className="text-[#e8aa1a] font-semibold mb-4">Maringá - PR</p>
             <p className="text-[#a399b8] leading-relaxed mb-6">
-              O evento será realizado no auditório principal do campus sede da UniCesumar.
-              Um espaço moderno, com estrutura de ponta para receber congressistas, salas de
-              apresentações científicas e amplas áreas de convivência.
+              O evento será realizado no ginásio principal do Colégio Objetivo, com acesso
+              pelo campus sede da UniCesumar. Um espaço moderno, com estrutura de ponta para
+              receber congressistas, salas de apresentações científicas e amplas áreas de
+              convivência.
             </p>
 
             <p className="text-xs font-bold tracking-[0.2em] text-[#e8aa1a] uppercase mb-1">
