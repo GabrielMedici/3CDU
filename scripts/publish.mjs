@@ -1,11 +1,21 @@
-// Publica fotos já convertidas (saída de convert-raw.mjs) direto no Supabase:
-// sobe display+thumb pro Storage e cria a linha na tabela `photos` — sem
-// precisar do painel /admin/upload nem de nenhuma Edge Function.
+// Publica fotos já convertidas (saída de convert-raw.mjs): sobe display+thumb
+// direto pro bucket R2 (é quem realmente serve as fotos, via worker/index.js)
+// e cria a linha na tabela `photos` do Supabase — sem precisar do painel
+// /admin/upload nem de nenhuma Edge Function.
+//
+// Antes fazia upload pro Supabase Storage também, mas isso duplicava os
+// arquivos (Storage + R2) e ia estourar o 1GB grátis do Supabase à toa, já
+// que o Storage não serve mais tráfego de visitante nenhum — só o R2. A URL
+// gravada no banco continua no MESMO formato de antes (prefixo
+// /storage/v1/object/public/<bucket>/) mesmo sem o arquivo existir de fato
+// lá, porque é só isso que o proxy do Worker (lib/imageProxy.ts) usa pra
+// montar o caminho /img/<...> — o Worker busca o bytes no R2, não no Storage.
 //
 // Precisa de um .env na raiz do projeto com:
 //   SUPABASE_URL=https://xxxx.supabase.co
 //   SUPABASE_SERVICE_ROLE_KEY=xxxx   (Settings → API → service_role, NÃO a anon key)
-//   SUPABASE_PHOTOS_BUCKET=photos    (opcional, padrão "photos")
+//   SUPABASE_PHOTOS_BUCKET=photos    (opcional, padrão "photos" — só pro formato da URL)
+//   R2_ENDPOINT / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY / R2_BUCKET
 //
 // Uso:
 //   node --env-file=.env scripts/publish.mjs --dia 1 "<pasta convertidas>"
@@ -16,15 +26,16 @@
 //
 // Use --force para reenviar TUDO de novo mesmo o que já foi publicado (ex:
 // depois de trocar a marca d'água ou reprocessar o lote inteiro) — sobrescreve
-// os arquivos no Storage sem duplicar linha na tabela.
+// os arquivos no R2 sem duplicar linha na tabela.
 
 import { createClient } from "@supabase/supabase-js";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { readdir, readFile } from "fs/promises";
 import path from "path";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const BUCKET = process.env.SUPABASE_PHOTOS_BUCKET || "photos";
+const BUCKET = process.env.SUPABASE_PHOTOS_BUCKET || "photos"; // só define o formato da URL gravada no banco
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   console.error(
@@ -46,24 +57,26 @@ if (!dia || ![1, 2, 3].includes(dia) || !inputDir) {
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-async function ensureBucket() {
-  const { data: buckets } = await supabase.storage.listBuckets();
-  if (!buckets?.some((b) => b.name === BUCKET)) {
-    console.log(`Bucket "${BUCKET}" não existe, criando (público)...`);
-    const { error } = await supabase.storage.createBucket(BUCKET, { public: true });
-    if (error) throw error;
-  }
-}
+const s3 = new S3Client({
+  region: "auto",
+  endpoint: process.env.R2_ENDPOINT,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+  },
+});
 
 async function uploadOne(localPath, storagePath) {
   const fileBuf = await readFile(localPath);
-  const { error } = await supabase.storage
-    .from(BUCKET)
-    .upload(storagePath, fileBuf, { contentType: "image/jpeg", upsert: true });
-  if (error) throw error;
-  const { data } = supabase.storage.from(BUCKET).getPublicUrl(storagePath);
-  return data.publicUrl;
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET,
+      Key: storagePath,
+      Body: fileBuf,
+      ContentType: "image/jpeg",
+    })
+  );
+  return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${storagePath}`;
 }
 
 async function alreadyPublished(thumbnailUrl) {
@@ -86,8 +99,7 @@ async function main() {
     return;
   }
 
-  await ensureBucket();
-  console.log(`Publicando ${files.length} foto(s) do Dia ${dia}...`);
+  console.log(`Publicando ${files.length} foto(s) do Dia ${dia} no R2...`);
 
   let published = 0;
   let overwritten = 0;
@@ -112,7 +124,7 @@ async function main() {
       const watermarkedUrl = await uploadOne(displayLocal, `dia_${dia}/display/${baseName}.jpg`);
 
       if (exists) {
-        // --force: arquivo já sobrescrito no Storage acima, linha do banco
+        // --force: arquivo já sobrescrito no R2 acima, linha do banco
         // continua igual (mesma URL, não precisa mexer na tabela).
         overwritten++;
         process.stdout.write(`\r[${i + 1}/${files.length}] ${file} sobrescrita          `);

@@ -8,9 +8,10 @@
 //             para download (usa public/images/watermark-logo.png)
 //   - thumb   (480px,  qualidade 65) — miniatura pro grid da galeria, sem marca
 //
-// Tamanhos reduzidos a partir de 26/08/2026 para economizar banda do proxy de
-// cache do Worker (worker/index.js) — o Dia 1 já publicado usa os valores
-// antigos (2400px/82 e 600px/75) e não precisa ser reprocessado.
+// Tamanhos ficaram reduzidos entre 26 e 27/08/2026 (1920px/74) pra caber no
+// 1GB grátis do Supabase Storage. A partir da migração pro R2 (10GB grátis,
+// e o Supabase Storage nem serve mais tráfego de visitante) essa pressão
+// acabou, e o padrão voltou pro valor alto original.
 //
 // A triagem é só um AUXÍLIO — nada é apagado. Fotos com sinal de problema
 // (desfocada, muito escura/estourada, possível duplicata de rajada) continuam
@@ -51,12 +52,31 @@ const BRIGHT_MEAN_THRESHOLD = 230;     // acima disso (0-255) = estourada (absol
 const DUPLICATE_HAMMING_THRESHOLD = 3; // diferença de bits <= isso = hash visual parecido
 const DUPLICATE_MAX_SECONDS = 3;       // ...E tirada a até N segundos da foto anterior
 
-const inputDir = process.argv[2];
+// Largura/qualidade do display sao configuraveis por flag para permitir gerar
+// um lote mais leve quando o espaco no Storage estiver apertado, sem alterar o
+// padrao usado nos lotes ja publicados.
+//   npm run convert-raw -- "<pasta>" [saida] --largura 1600 --qualidade 70
+const rawArgs = process.argv.slice(2);
+const flagValue = (nome, padrao) => {
+  const i = rawArgs.indexOf(nome);
+  if (i === -1) return padrao;
+  const v = Number(rawArgs[i + 1]);
+  if (!Number.isFinite(v) || v <= 0) {
+    console.error(`Valor invalido para ${nome}: ${rawArgs[i + 1]}`);
+    process.exit(1);
+  }
+  return v;
+};
+const DISPLAY_WIDTH = flagValue("--largura", 2400);
+const DISPLAY_QUALITY = flagValue("--qualidade", 82);
+const positional = rawArgs.filter((a, i) => !a.startsWith("--") && !String(rawArgs[i - 1] || "").startsWith("--"));
+
+const inputDir = positional[0];
 if (!inputDir) {
-  console.error('Uso: npm run convert-raw -- "<pasta com os RAW>" [pasta-de-saida]');
+  console.error('Uso: npm run convert-raw -- "<pasta com os RAW>" [pasta-de-saida] [--largura N] [--qualidade N]');
   process.exit(1);
 }
-const outputDir = process.argv[3] || path.join(inputDir, "convertidas");
+const outputDir = positional[1] || path.join(inputDir, "convertidas");
 
 const LAPLACIAN_KERNEL = { width: 3, height: 3, kernel: [0, 1, 0, 1, -4, 1, 0, 1, 0] };
 
@@ -116,7 +136,7 @@ async function applyWatermark(imageBuf, watermarkBase) {
         top: margin, // canto superior direito
       },
     ])
-    .jpeg({ quality: 74 })
+    .jpeg({ quality: DISPLAY_QUALITY })
     .toBuffer();
 }
 
@@ -197,8 +217,8 @@ async function main() {
 
       const resizedBuf = await sharp(tempPreview)
         .rotate(rotateDeg || undefined)
-        .resize({ width: 1920, height: 1920, fit: "inside", withoutEnlargement: true })
-        .jpeg({ quality: 74 })
+        .resize({ width: DISPLAY_WIDTH, height: DISPLAY_WIDTH, fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: DISPLAY_QUALITY })
         .toBuffer();
       const displayBuf = await applyWatermark(resizedBuf, watermarkBase);
       await sharp(displayBuf).toFile(displayOut);
@@ -296,9 +316,9 @@ async function main() {
   console.log(`Tamanho total (display+thumb): ${(totalBytes / 1024 / 1024).toFixed(1)} MB`);
   console.log(`Média por foto: ${avgPerPhotoKB.toFixed(0)} KB`);
   if (ok > 0) {
-    const freeCapGB = 1; // capacidade aproximada do Supabase Storage no plano free
+    const freeCapGB = 10; // capacidade aproximada do R2 no plano free
     const capacity = Math.floor((freeCapGB * 1024 * 1024) / avgPerPhotoKB);
-    console.log(`Capacidade estimada no free tier (1GB): ~${capacity} fotos nesse padrão`);
+    console.log(`Capacidade estimada no free tier do R2 (10GB): ~${capacity} fotos nesse padrão`);
   }
   console.log(`\nSaída em: ${outputDir}`);
   console.log(`Relatório completo (nitidez/brilho por foto): ${path.join(outputDir, "relatorio.csv")}`);
