@@ -30,6 +30,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 import { readdir, readFile } from "fs/promises";
 import path from "path";
 
@@ -64,6 +65,14 @@ const s3 = new S3Client({
     accessKeyId: process.env.R2_ACCESS_KEY_ID,
     secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
   },
+  // Sem timeout, uma conexão travada trava o processo inteiro indefinidamente
+  // (visto na prática publicando o Dia 3) — com timeout ela vira um erro
+  // normal, cai no catch do loop e a foto pode ser reenviada depois.
+  requestHandler: new NodeHttpHandler({
+    connectionTimeout: 10_000,
+    requestTimeout: 30_000,
+  }),
+  maxAttempts: 3,
 });
 
 async function uploadOne(localPath, storagePath) {
@@ -79,12 +88,22 @@ async function uploadOne(localPath, storagePath) {
   return `${SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${storagePath}`;
 }
 
+// supabase-js não tem timeout embutido — uma conexão travada trava o processo
+// inteiro indefinidamente (visto na prática publicando o Dia 3). Com timeout
+// vira um erro normal, cai no catch do loop, e a foto pode ser reenviada depois.
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout (${ms}ms) em ${label}`)), ms)),
+  ]);
+}
+
 async function alreadyPublished(thumbnailUrl) {
-  const { data, error } = await supabase
-    .from("photos")
-    .select("id")
-    .eq("thumbnail_url", thumbnailUrl)
-    .limit(1);
+  const { data, error } = await withTimeout(
+    supabase.from("photos").select("id").eq("thumbnail_url", thumbnailUrl).limit(1),
+    15_000,
+    "alreadyPublished"
+  );
   if (error) throw error;
   return (data?.length ?? 0) > 0;
 }
@@ -131,11 +150,15 @@ async function main() {
         continue;
       }
 
-      const { error } = await supabase.from("photos").insert({
-        dia_evento: dia,
-        thumbnail_url: thumbnailUrl,
-        watermarked_url: watermarkedUrl,
-      });
+      const { error } = await withTimeout(
+        supabase.from("photos").insert({
+          dia_evento: dia,
+          thumbnail_url: thumbnailUrl,
+          watermarked_url: watermarkedUrl,
+        }),
+        15_000,
+        "insert"
+      );
       if (error) throw error;
 
       published++;
